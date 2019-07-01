@@ -161,14 +161,16 @@ class FontCodeGenerator:
 
     def drawFromArray(self, char):
         array = self.charDict[char]
+        print(array)
         print("h")
-        #self.pixelGridArray = np.copy(array)
+        self.pixelGridArray = np.copy(array)
+        self.pixelGrid.clearSelection()
         for x in range(array.shape[0]):
             for y in range(array.shape[1]):
-                if array[x,y] == 1:
-                    self.pixelGrid[x, y].setBackground(Qt.QColor(0, 0, 0))
+                if array[x, y] == 1:
+                    self.pixelGrid.item(x, y).setBackground(Qt.QColor(0, 0, 0))
                 else:
-                    self.pixelGrid[x, y].setBackground(Qt.QColor(255, 255, 255))
+                    self.pixelGrid.item(x, y).setBackground(Qt.QColor(255, 255, 255))
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
