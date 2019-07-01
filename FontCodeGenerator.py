@@ -18,6 +18,9 @@ class FontCodeGenerator:
 
     def __init__(self):
         super(FontCodeGenerator, self).__init__()
+
+        self.charDict = {}
+
         # --- Main Menu Window  --- #
         self.mainWindow = QtWidgets.QWidget()
         self.titleLabel = QtWidgets.QLabel("Font Code Generator for C")
@@ -59,24 +62,31 @@ class FontCodeGenerator:
         self.pixelGrid.horizontalHeader().hide()
         self.pixelGrid.verticalHeader().hide()
         self.charList = QtWidgets.QListWidget()
-        self.saveButton = QtWidgets.QPushButton(text="Save")
+        self.charList.addItems(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+        self.saveCharButton = QtWidgets.QPushButton(text="Save")
         self.drawButton = QtWidgets.QPushButton(text="Draw")
         self.eraseButton = QtWidgets.QPushButton(text="Erase")
         self.drawBtnLayout = QtWidgets.QHBoxLayout()
 
         # Set Widget Actions Behavior
-        self.saveButton.clicked.connect(self.startSave)
+        # Button Behavior
+        self.saveCharButton.clicked.connect(self.startSave)
         self.drawButton.clicked.connect(self.selectDraw)
         self.eraseButton.clicked.connect(self.selectErase)
+        # Pixel Grid Behavior
         self.pixelGrid.itemSelectionChanged.connect(self.onCellSelection)
         self.pixelPalette = self.pixelGrid.palette()
         self.selectDraw()
         self.pixelGridArray = np.zeros(1)
-
+        # Char List Behavior
+        self.charList.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)  # Allow only selection of 1 item
+        self.charList.itemClicked.connect(self.listSelect)  # Connect to listSelect function
+        self.charList.setCurrentRow(0)
+        self.currChar = self.charList.currentItem().text()
 
         # Build Drawing Window UI
         self.vLayout.addWidget(self.charList)
-        self.vLayout.addWidget(self.saveButton)
+        self.vLayout.addWidget(self.saveCharButton)
         self.hLayout.addLayout(self.vLayout)
         self.drawLayout.addWidget(self.pixelGrid)
         self.drawBtnLayout.addWidget(self.drawButton)
@@ -97,10 +107,13 @@ class FontCodeGenerator:
         self.pixelGrid.setRowCount(rows)
         self.pixelGrid.setColumnCount(cols)
         self.pixelGridArray = np.zeros((rows, cols))
-        # Allows drawing on the
+        # Allows drawing on the pixel grid
         for x in range(rows):
             for y in range(cols):
                 self.pixelGrid.setItem(x, y, QtWidgets.QTableWidgetItem())
+        # Initialize dictionary of font data
+        for i in range(self.charList.count()):
+            self.charDict.update({self.charList.item(i).text(): np.zeros((rows, cols))})
         print(self.pixelGridArray)
         self.drawWindow.show()
 
@@ -138,6 +151,24 @@ class FontCodeGenerator:
             else:
                 self.pixelGridArray[x.row(), x.column()] = 0
                 self.pixelGrid.item(x.row(), x.column()).setBackground(QtGui.QColor(255, 255, 255))
+
+    def listSelect(self):
+        # Save the current pixel grid in the dictionary
+        self.charDict[self.currChar] = np.copy(self.pixelGridArray)
+        self.currChar = self.charList.currentItem().text()
+        print(self.charList.currentItem().text())
+        self.drawFromArray(self.currChar)
+
+    def drawFromArray(self, char):
+        array = self.charDict[char]
+        print("h")
+        #self.pixelGridArray = np.copy(array)
+        for x in range(array.shape[0]):
+            for y in range(array.shape[1]):
+                if array[x,y] == 1:
+                    self.pixelGrid[x, y].setBackground(Qt.QColor(0, 0, 0))
+                else:
+                    self.pixelGrid[x, y].setBackground(Qt.QColor(255, 255, 255))
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
