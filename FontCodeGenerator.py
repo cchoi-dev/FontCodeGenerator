@@ -1,6 +1,7 @@
 import sys
 import os
 from PyQt5 import QtGui, QtCore, QtWidgets, Qt
+import numpy as np
 
 
 class pixelGrid(QtWidgets.QTableView):
@@ -63,9 +64,11 @@ class FontCodeGenerator:
         self.saveButton.clicked.connect(self.startSave)
         self.pixelGrid.itemSelectionChanged.connect(self.onCellSelection)
         self.pixelPalette = self.pixelGrid.palette()
-        self.pixelPalette.setBrush(QtGui.QPalette.Highlight, Qt.black)
-        #self.pixelPalette.setBrush(QtGui.QPalette.Highlight, QtGui.QBrush(QtGui.QColor(0, 0, 0)))
+        #self.pixelPalette.setBrush(QtGui.QPalette.Highlight, Qt.black)
+        self.pixelPalette.setBrush(QtGui.QPalette.Highlight, QtGui.QBrush(QtGui.QColor(0, 0, 0)))
         self.pixelPalette.setBrush(QtGui.QPalette.HighlightedText, QtGui.QBrush(QtGui.QColor(0, 0, 0)))
+        self.pixelGrid.setPalette(self.pixelPalette)
+        self.pixelGridArray = np.zeros(1)
 
         # Build Drawing Window UI
         self.vLayout.addWidget(self.charList)
@@ -81,8 +84,12 @@ class FontCodeGenerator:
     def startNew(self):
         print("Hello")
         self.mainWindow.close()
-        self.pixelGrid.setRowCount(int(self.heightTextInput.text()))
-        self.pixelGrid.setColumnCount(int(self.widthTextInput.text()))
+        rows = int(self.heightTextInput.text())
+        cols = int(self.widthTextInput.text())
+        self.pixelGrid.setRowCount(rows)
+        self.pixelGrid.setColumnCount(cols)
+        self.pixelGridArray = np.zeros((rows, cols))
+        print(self.pixelGridArray)
         self.drawWindow.show()
 
     def startLoad(self):
@@ -91,11 +98,14 @@ class FontCodeGenerator:
         self.drawWindow.show()
 
     def startSave(self):
-        pass
+        print(self.pixelGridArray)
 
     def onCellSelection(self):
-        print("SD")
-        pass
+        for x in self.pixelGrid.selectedIndexes():
+            self.pixelGridArray[x.row(), x.column()] = 1
+            self.pixelGrid.setItem(x.row(), x.column(), QtWidgets.QTableWidgetItem())
+            self.pixelGrid.item(x.row(), x.column()).setBackground(QtGui.QColor(0, 0, 0))
+        #print(self.pixelGridArray)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
